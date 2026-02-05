@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earworm - Hum to Song</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center h-screen">
+    <div class="text-center">
+        <h1 class="text-5xl font-bold mb-4">Earworm</h1>
+        <p class="text-lg mb-8">Hum a tune, and I'll guess that song!</p>
+        <button id="recordButton" class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-8 rounded-full transition-all duration-200">
+            Tap to Hum
+        </button>
+        <div id="result" class="mt-8 text-2xl"></div>
+    </div>
+
+    <script>
+        const recordButton = document.getElementById('recordButton');
+        const resultDiv = document.getElementById('result');
+        let mediaRecorder;
+        let audioChunks = [];
+
+        recordButton.textContent = 'Tap to Hum'; // Reset button text
+
+        recordButton.addEventListener('click', () => {
+            if (recordButton.textContent === 'Tap to Hum') {
+                // Start recording
+                recordButton.textContent = 'Stop Humming';
+                resultDiv.textContent = 'Recording...';
+                audioChunks = [];
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        mediaRecorder = new MediaRecorder(stream);
+                        mediaRecorder.ondataavailable = event => {
+                            audioChunks.push(event.data);
+                        };
+                        mediaRecorder.onstop = () => {
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                            const formData = new FormData();
+                            formData.append('audio', audioBlob, 'hum.wav');
+
+                            resultDiv.textContent = 'Identifying...';
+
+                            fetch('/identify', {
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status && data.status.msg === 'Success' && data.metadata) {
+                                    const musicData = data.metadata.music || data.metadata.humming;
+                                    if (musicData && musicData.length > 0) {
+                                        const song = musicData[0];
+                                        resultDiv.innerHTML = `
+                                            <p><strong>Song:</strong> ${song.title}</p>
+                                            <p><strong>Artist:</strong> ${song.artists.map(a => a.name).join(', ')}</p>
+                                            <p><strong>Album:</strong> ${song.album.name}</p>
+                                        `;
+                                    } else {
+                                        resultDiv.textContent = 'Could not identify the song. Response from server: ' + (data.status ? data.status.msg : 'Unknown error');
+                                    }
+                                } else {
+                                     resultDiv.textContent = 'Could not identify the song. Response from server: ' + (data.status ? data.status.msg : 'Unknown error');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                resultDiv.textContent = 'An error occurred: ' + error.message;
+                            });
+                        };
+                        mediaRecorder.start();
+                    })
+                    .catch(error => {
+                        console.error('Error accessing microphone:', error);
+                        resultDiv.textContent = 'Error accessing microphone. Please ensure it is enabled.';
+                    });
+            } else {
+                // Stop recording
+                recordButton.textContent = 'Tap to Hum';
+                mediaRecorder.stop();
+            }
+        });
+
+        // This is an option to use a prerecorded audio file instead of live humming.
+        /*
+        recordButton.textContent = 'Identify Song'; // Change button text
+
+        recordButton.addEventListener('click', () => {
+            resultDiv.textContent = 'Fetching audio...';
+
+            // Fetch the pre-recorded audio file from the backend
+            fetch('/audio/hum.wav')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Audio file not found.');
+                    }
+                    return response.blob();
+                })
+                .then(audioBlob => {
+                    const formData = new FormData();
+                    formData.append('audio', audioBlob, 'hum.wav');
+
+                    resultDiv.textContent = 'Identifying...';
+
+                    // Send the audio data to the identification endpoint
+                    return fetch('/identify', {
+                        method: 'POST',
+                        body: formData
+                    });
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status && data.status.msg === 'Success' && data.metadata && data.metadata.humming && data.metadata.humming.length > 0) {
+                        const song = data.metadata.humming[0];
+                        resultDiv.innerHTML = `
+                            <p><strong>Song:</strong> ${song.title}</p>
+                            <p><strong>Artist:</strong> ${song.artists.map(a => a.name).join(', ')}</p>
+                            <p><strong>Album:</strong> ${song.album.name}</p>
+                        `;
+                    } else {
+                         resultDiv.textContent = 'Could not identify the song. Response from server: ' + (data.status ? data.status.msg : 'Unknown error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    resultDiv.textContent = 'An error occurred: ' + error.message;
+                });
+        });
+        */
+    </script>
+</body>
+</html>

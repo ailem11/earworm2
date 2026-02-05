@@ -1,0 +1,11 @@
+# Ignore backend environment and cache
+backend/venv/
+backend/__pycache__/
+backend/*.pem
+
+# Ignore frontend dependencies
+frontend/node_modules/
+frontend/.env
+
+# System files
+.DS_Store
