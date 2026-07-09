@@ -8,6 +8,10 @@ import hashlib
 import csv
 import io
 import re
+from dotenv import load_dotenv
+
+# Load local .env file if it exists (for local Cloudtop development)
+load_dotenv()
 
 import logging
 
