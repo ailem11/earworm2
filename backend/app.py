@@ -154,6 +154,16 @@ def get_portfolio():
         app.logger.error(f"Error loading sheets portfolio: {e}")
         return jsonify({'error': str(e)}), 500
 
+def sanitize_float(val, default=0.0):
+    if not val:
+        return default
+    try:
+        # Keep only digits, periods, and minus signs to safely parse numbers with currency symbols or commas
+        cleaned = re.sub(r'[^\d.-]', '', str(val).strip())
+        return float(cleaned) if cleaned else default
+    except ValueError:
+        return default
+
 def parse_sheets_csv(csv_text):
     f = io.StringIO(csv_text)
     reader = csv.reader(f)
@@ -169,27 +179,30 @@ def parse_sheets_csv(csv_text):
     for idx, h in enumerate(headers):
         if 'ticker' in h or 'symbol' in h or 'stock' in h:
             ticker_idx = idx
-        elif 'share' in h or 'qty' in h or 'quantity' in h or 'count' in h:
-            shares_idx = idx
+        # Prioritize price/cost columns over shares to avoid 'share price' colliding with shares
         elif ('buy' in h or 'cost' in h or 'purchase' in h or 'price' in h) and 'total' not in h:
             buy_price_idx = idx
+        elif 'share' in h or 'qty' in h or 'quantity' in h or 'count' in h or 'units' in h:
+            shares_idx = idx
             
     if ticker_idx == -1: ticker_idx = 0
     if shares_idx == -1: shares_idx = min(1, len(headers)-1)
     if buy_price_idx == -1: buy_price_idx = min(2, len(headers)-1)
     
+    app.logger.debug(f"Parsed CSV Headers: {headers}. Indices -> Ticker: {ticker_idx}, Shares: {shares_idx}, BuyPrice: {buy_price_idx}")
+    
     portfolio = []
     for r in rows[1:]:
         if len(r) > max(ticker_idx, shares_idx, buy_price_idx):
             ticker = r[ticker_idx].strip().upper()
-            if not ticker:
+            if not ticker or ticker == 'TOTAL' or ticker == 'SUM':
                 continue
-            try:
-                shares = float(r[shares_idx].replace(',', '').strip()) if r[shares_idx] else 1.0
-                buy_price = float(r[buy_price_idx].replace('$', '').replace(',', '').strip()) if r[buy_price_idx] else 0.0
-            except ValueError:
-                shares = 1.0
-                buy_price = 0.0
+                
+            shares = sanitize_float(r[shares_idx], default=1.0)
+            buy_price = sanitize_float(r[buy_price_idx], default=0.0)
+            
+            app.logger.debug(f"Parsed Row - Ticker: {ticker}, Shares: {shares}, BuyPrice: {buy_price}")
+            
             portfolio.append({
                 "ticker": ticker,
                 "shares": shares,
