@@ -3,20 +3,461 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earworm - Hum to Song</title>
+    <title>Aile's Playground</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-900 text-white flex items-center justify-center h-screen">
-    <div class="text-center">
-        <h1 class="text-5xl font-bold mb-4">Earworm</h1>
-        <p class="text-lg mb-8">Hum a tune, and I'll guess that song!</p>
-        <button id="recordButton" class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-8 rounded-full transition-all duration-200">
-            Tap to Hum
-        </button>
-        <div id="result" class="mt-8 text-2xl"></div>
-    </div>
+<body class="bg-gray-900 text-white flex h-screen overflow-hidden font-sans">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gray-950 flex flex-col justify-between border-r border-gray-800">
+        <div class="p-6">
+            <div class="flex items-center space-x-3 mb-8">
+                <!-- Icon or Logo -->
+                <svg class="w-8 h-8 text-red-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                    </path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                    </path>
+                </svg>
+                <span class="text-xl font-bold tracking-wider">Aile's Playground</span>
+            </div>
+
+            <nav class="space-y-2">
+                <button id="navEarworm"
+                    class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 bg-red-600/20 text-red-400 border border-red-500/30">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z">
+                        </path>
+                    </svg>
+                    <span class="font-medium">Earworm</span>
+                </button>
+
+                <button id="navVibeCheck"
+                    class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 hover:bg-gray-800 text-gray-400 hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                        </path>
+                    </svg>
+                    <span class="font-medium">Vibe Check</span>
+                </button>
+
+                <button id="navStockCheck"
+                    class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 hover:bg-gray-800 text-gray-400 hover:text-gray-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                    <span class="font-medium">Stock Check</span>
+                </button>
+            </nav>
+        </div>
+        <div class="p-6 border-t border-gray-800 text-sm text-gray-500 text-center">
+            v2.0.0
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col justify-start items-center p-8 overflow-y-auto">
+        <!-- Earworm View (active by default) -->
+        <div id="viewEarworm" class="text-center max-w-xl mx-auto flex flex-col items-center justify-center min-h-[70vh]">
+            <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
+                Earworm</h1>
+            <p class="text-lg text-gray-400 mb-12">Hum a tune, and I'll guess that song!</p>
+
+            <button id="recordButton"
+                class="bg-red-600 hover:bg-red-700 text-white font-bold py-6 px-12 rounded-full text-xl shadow-lg shadow-red-600/30 hover:shadow-red-700/50 hover:scale-105 transform active:scale-95 transition-all duration-200">
+                Tap to Hum
+            </button>
+            <div id="result" class="mt-12 text-2xl text-gray-200 min-h-[100px] flex items-center justify-center">
+                <!-- Result container -->
+            </div>
+        </div>
+        
+        <!-- Vibe Check View (hidden by default) -->
+        <div id="viewVibeCheck" class="hidden w-full max-w-6xl mx-auto px-4">
+            <div class="text-center mb-8">
+                <h1
+                    class="text-5xl font-bold mb-4 bg-gradient-to-r from-purple-500 to-indigo-500 bg-clip-text text-transparent">
+                    Vibe Check</h1>
+                <p class="text-lg text-gray-400">Captures the natural rhythm of your body (hormonal cycles, mood swings, energy
+                    levels)</p>
+            </div>
+        
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left">
+                <!-- Check-in Form Column (7 cols) -->
+                <div class="lg:col-span-7 bg-gray-800/40 border border-gray-700/50 rounded-2xl p-6 md:p-8 shadow-xl">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-100 flex items-center space-x-2">
+                        <span>👋 Hello, how are you feeling today?</span>
+                    </h2>
+        
+                    <form id="vibeForm" class="space-y-6">
+                        <!-- 1. Mood -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-300 mb-3">1. Current Mood</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="moodOptions">
+                                <button type="button" data-value="Happy"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">😊</span>
+                                    <span class="text-xs text-gray-300">Happy</span>
+                                </button>
+                                <button type="button" data-value="Good"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">🙂</span>
+                                    <span class="text-xs text-gray-300">Good</span>
+                                </button>
+                                <button type="button" data-value="Optimistic"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">🌟</span>
+                                    <span class="text-xs text-gray-300">Optimistic</span>
+                                </button>
+                                <button type="button" data-value="Okay"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">👌</span>
+                                    <span class="text-xs text-gray-300">Okay</span>
+                                </button>
+                                <button type="button" data-value="Busy"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">💼</span>
+                                    <span class="text-xs text-gray-300">Busy</span>
+                                </button>
+                                <button type="button" data-value="Regular"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">😐</span>
+                                    <span class="text-xs text-gray-300">Blah</span>
+                                </button>
+                                <button type="button" data-value="Calm"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">😌</span>
+                                    <span class="text-xs text-gray-300">Calm</span>
+                                </button>
+                                <button type="button" data-value="sad"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">😢</span>
+                                    <span class="text-xs text-gray-300">Sad</span>
+                                </button>
+                                <button type="button" data-value="Pessimistic"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">☁️</span>
+                                    <span class="text-xs text-gray-300">Pessimistic</span>
+                                </button>
+                                <button type="button" data-value="Bored"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">🥱</span>
+                                    <span class="text-xs text-gray-300">Bored</span>
+                                </button>
+                                <button type="button" data-value="Other" id="moodOtherBtn"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">📝</span>
+                                    <span class="text-xs text-gray-300">Other</span>
+                                </button>
+                            </div>
+                            <input type="text" id="moodOtherInput" placeholder="How would you describe your mood?"
+                                class="hidden mt-3 w-full px-4 py-2 bg-gray-900/70 border border-gray-700 rounded-xl focus:outline-none focus:border-purple-500 text-white text-sm" />
+                        </div>
+        
+                        <!-- 2. Energy Levels -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-300 mb-3">2. Energy Level</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="energyOptions">
+                                <button type="button" data-value="Hyper"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">⚡</span>
+                                    <span class="text-xs text-gray-300">Hyper</span>
+                                </button>
+                                <button type="button" data-value="Caffeinated"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">☕</span>
+                                    <span class="text-xs text-gray-300">Caffeinated</span>
+                                </button>
+                                <button type="button" data-value="Regular"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">🟢</span>
+                                    <span class="text-xs text-gray-300">Regular</span>
+                                </button>
+                                <button type="button" data-value="Sleepy"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">😴</span>
+                                    <span class="text-xs text-gray-300">Sleepy</span>
+                                </button>
+                                <button type="button" data-value="Lethargic"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">🐌</span>
+                                    <span class="text-xs text-gray-300">Lethargic</span>
+                                </button>
+                                <button type="button" data-value="Tired"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">😫</span>
+                                    <span class="text-xs text-gray-300">Tired</span>
+                                </button>
+                                <button type="button" data-value="Other" id="energyOtherBtn"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">📝</span>
+                                    <span class="text-xs text-gray-300">Other</span>
+                                </button>
+                            </div>
+                            <input type="text" id="energyOtherInput" placeholder="How is your energy level?"
+                                class="hidden mt-3 w-full px-4 py-2 bg-gray-900/70 border border-gray-700 rounded-xl focus:outline-none focus:border-purple-500 text-white text-sm" />
+                        </div>
+        
+                        <!-- 3. Workout -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-300 mb-3">3. Workout Activity</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="workoutOptions">
+                                <button type="button" data-value="No work out"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">🛋️</span>
+                                    <span class="text-xs text-gray-300">No Workout</span>
+                                </button>
+                                <button type="button" data-value="Light"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">🚶</span>
+                                    <span class="text-xs text-gray-300">Light</span>
+                                </button>
+                                <button type="button" data-value="Medium"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">🏃</span>
+                                    <span class="text-xs text-gray-300">Medium</span>
+                                </button>
+                                <button type="button" data-value="Intense"
+                                    class="option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-2xl mb-1">🏋️</span>
+                                    <span class="text-xs text-gray-300">Intense</span>
+                                </button>
+                            </div>
+                        </div>
+        
+                        <!-- 4. Period -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-300 mb-3">4. Cycle / Period Day</label>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2" id="periodOptions">
+                                <button type="button" data-value="No Period"
+                                    class="option-btn px-2 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200 col-span-2 md:col-span-1">
+                                    <span class="text-xl mb-1">🌸</span>
+                                    <span class="text-[10px] text-gray-300">None</span>
+                                </button>
+                                <button type="button" data-value="Day 1"
+                                    class="option-btn px-2 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-xl mb-1">🩸</span>
+                                    <span class="text-[10px] text-gray-300">Day 1</span>
+                                </button>
+                                <button type="button" data-value="Day 2"
+                                    class="option-btn px-2 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-xl mb-1">🩸</span>
+                                    <span class="text-[10px] text-gray-300">Day 2</span>
+                                </button>
+                                <button type="button" data-value="Day 3"
+                                    class="option-btn px-2 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-xl mb-1">🩸</span>
+                                    <span class="text-[10px] text-gray-300">Day 3</span>
+                                </button>
+                                <button type="button" data-value="Day 4"
+                                    class="option-btn px-2 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-xl mb-1">🩸</span>
+                                    <span class="text-[10px] text-gray-300">Day 4</span>
+                                </button>
+                                <button type="button" data-value="Day 5"
+                                    class="option-btn px-2 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-xl mb-1">🩸</span>
+                                    <span class="text-[10px] text-gray-300">Day 5</span>
+                                </button>
+                                <button type="button" data-value="Day 6"
+                                    class="option-btn px-2 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200">
+                                    <span class="text-xl mb-1">🩸</span>
+                                    <span class="text-[10px] text-gray-300">Day 6</span>
+                                </button>
+                            </div>
+                        </div>
+        
+                        <button type="submit"
+                            class="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-lg shadow-lg shadow-purple-600/30 hover:scale-[1.01] transition-all duration-200">
+                            Save Vibe
+                        </button>
+                    </form>
+                </div>
+        
+                <!-- Analytics Column (5 cols) -->
+                <div class="lg:col-span-5 flex flex-col space-y-6">
+                    <!-- Stats Card -->
+                    <div class="bg-gray-800/40 border border-gray-700/50 rounded-2xl p-6 shadow-xl">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-100">Your Vibe Dashboard</h3>
+                            <button id="btnClearHistory"
+                                class="text-xs text-gray-500 hover:text-purple-400 transition-colors">Clear History</button>
+                        </div>
+        
+                        <div id="analyticsContent" class="space-y-6">
+                            <!-- JS populated content -->
+                            <div class="text-center py-12 text-gray-500">
+                                <span class="text-4xl block mb-2">📊</span>
+                                No checks logged yet. Log your first check-in to see metrics!
+                            </div>
+                        </div>
+                    </div>
+        
+                    <!-- History Log Card -->
+                    <div
+                        class="bg-gray-800/40 border border-gray-700/50 rounded-2xl p-6 shadow-xl flex-1 flex flex-col max-h-[450px]">
+                        <h3 class="text-xl font-bold text-gray-100 mb-4">Recent History</h3>
+                        <div id="historyLogList" class="space-y-3 overflow-y-auto pr-1 flex-1">
+                            <!-- JS populated list -->
+                            <div class="text-center py-12 text-gray-500">
+                                <span class="text-4xl block mb-2">📜</span>
+                                Your recent logs will show up here.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stock Check View (hidden by default) -->
+        <div id="viewStockCheck" class="hidden w-full max-w-6xl mx-auto px-4">
+            <div class="text-center mb-8">
+                <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">Stock Check</h1>
+                <p class="text-lg text-gray-400">Real-time portfolio tracking, news analysis, and performance metrics</p>
+            </div>
+
+            <!-- Spreadsheet Connection Panel -->
+            <div class="bg-gray-800/40 border border-gray-700/50 rounded-2xl p-6 mb-8 shadow-xl text-left">
+                <h2 class="text-lg font-semibold mb-3 text-gray-200">Connect Google Drive Spreadsheet</h2>
+                <div class="flex flex-col md:flex-row gap-3">
+                    <input type="text" id="sheetUrlInput" placeholder="Paste Google Sheet URL or ID (must be published to web / shared to view)" 
+                        class="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:border-green-500 text-black text-sm placeholder-gray-400" />
+                    <div class="flex gap-2">
+                        <button id="btnLoadPortfolio" class="px-5 py-3 bg-green-600 hover:bg-green-500 text-white font-medium rounded-xl transition-colors shadow-md shadow-green-600/10 text-sm whitespace-nowrap">
+                            Load Portfolio
+                        </button>
+                        <button id="btnDemoPortfolio" class="px-5 py-3 bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium rounded-xl transition-colors text-sm whitespace-nowrap">
+                            Demo Portfolio
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-500 flex items-center space-x-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>To connect your Sheet: File &gt; Share &gt; Publish to web, OR share as "Anyone with link can view". Spreadsheet should have headers: Ticker, Shares, Buy Price.</span>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left">
+                <!-- Portfolio Holding Table Column (8 cols) -->
+                <div class="lg:col-span-8 bg-gray-800/40 border border-gray-700/50 rounded-2xl p-6 shadow-xl overflow-hidden">
+                    <h3 class="text-xl font-bold text-gray-100 mb-4 flex justify-between items-center">
+                        <span>Holdings</span>
+                        <span id="portfolioLastUpdated" class="text-xs text-gray-500 font-normal">Not loaded</span>
+                    </h3>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-300">
+                            <thead class="text-xs text-gray-400 uppercase bg-gray-900/60 border-b border-gray-700">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3">Stock</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Shares</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Buy Price</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Current Price</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Total Cost</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Total Value</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Today's Chg</th>
+                                    <th scope="col" class="px-4 py-3 text-right">Total P&L</th>
+                                </tr>
+                            </thead>
+                            <tbody id="portfolioTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center py-12 text-gray-500">
+                                        No stock portfolio loaded. Connect your spreadsheet or try the demo!
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Performance Card & News (4 cols) -->
+                <div class="lg:col-span-4 flex flex-col space-y-6">
+                    <!-- Summary Card -->
+                    <div class="bg-gray-800/40 border border-gray-700/50 rounded-2xl p-6 shadow-xl bg-gradient-to-br from-gray-800/40 to-gray-900/40">
+                        <h3 class="text-lg font-bold text-gray-100 mb-4">Summary</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between border-b border-gray-700/50 pb-2">
+                                <span class="text-gray-400 text-sm">Total Cost Basis</span>
+                                <span id="summaryTotalCost" class="font-semibold text-gray-200">$0.00</span>
+                            </div>
+                            <div class="flex justify-between border-b border-gray-700/50 pb-2">
+                                <span class="text-gray-400 text-sm">Portfolio Value</span>
+                                <span id="summaryTotalValue" class="font-semibold text-gray-200">$0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400 text-sm">Total Profit / Loss</span>
+                                <span id="summaryTotalGainLoss" class="font-bold text-gray-200">$0.00 (0.00%)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- News Feed Card -->
+                    <div class="bg-gray-800/40 border border-gray-700/50 rounded-2xl p-6 shadow-xl flex-1 flex flex-col max-h-[500px]">
+                        <h3 class="text-lg font-bold text-gray-100 mb-2 flex justify-between items-center">
+                            <span>Notable News</span>
+                            <span id="newsTargStock" class="text-xs px-2 py-0.5 rounded bg-gray-900/60 text-green-400 font-medium">All Stocks</span>
+                        </h3>
+                        <p class="text-xs text-gray-500 mb-4">Click a stock row in the table to filter news.</p>
+                        
+                        <div id="stockNewsList" class="space-y-4 overflow-y-auto pr-1 flex-1">
+                            <div class="text-center py-12 text-gray-500">
+                                <span class="text-3xl block mb-2">📰</span>
+                                Load portfolio to see relevant news.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </main>
 
     <script>
+                        const navEarworm = document.getElementById('navEarworm');
+                        const navVibeCheck = document.getElementById('navVibeCheck');
+                        const navStockCheck = document.getElementById('navStockCheck');
+                        const viewEarworm = document.getElementById('viewEarworm');
+                        const viewVibeCheck = document.getElementById('viewVibeCheck');
+                        const viewStockCheck = document.getElementById('viewStockCheck');
+
+                        function showView(viewName) {
+                            // Hide all views
+                            viewEarworm.classList.add('hidden');
+                            viewVibeCheck.classList.add('hidden');
+                            viewStockCheck.classList.add('hidden');
+
+                            // Reset navigation styling
+                            navEarworm.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 hover:bg-gray-800 text-gray-400 hover:text-gray-200";
+                            navVibeCheck.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 hover:bg-gray-800 text-gray-400 hover:text-gray-200";
+                            navStockCheck.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 hover:bg-gray-800 text-gray-400 hover:text-gray-200";
+
+                            if (viewName === 'earworm') {
+                                viewEarworm.classList.remove('hidden');
+                                navEarworm.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 bg-red-600/20 text-red-400 border border-red-500/30";
+                            } else if (viewName === 'vibecheck') {
+                                viewVibeCheck.classList.remove('hidden');
+                                navVibeCheck.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 bg-purple-600/20 text-purple-400 border border-purple-500/30";
+                            } else if (viewName === 'stockcheck') {
+                                viewStockCheck.classList.remove('hidden');
+                                navStockCheck.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors duration-200 bg-green-600/20 text-green-400 border border-green-500/30";
+                            }
+                        }
+
+                        navEarworm.addEventListener('click', () => showView('earworm'));
+                        navVibeCheck.addEventListener('click', () => showView('vibecheck'));
+                        navStockCheck.addEventListener('click', () => showView('stockcheck'));
+
         const recordButton = document.getElementById('recordButton');
         const resultDiv = document.getElementById('result');
         let mediaRecorder;
@@ -129,6 +570,576 @@
                 });
         });
         */
+                        // --- VIBE CHECK APP LOGIC ---
+                        const moodOptions = document.getElementById('moodOptions');
+                        const energyOptions = document.getElementById('energyOptions');
+                        const workoutOptions = document.getElementById('workoutOptions');
+                        const periodOptions = document.getElementById('periodOptions');
+
+                        const moodOtherInput = document.getElementById('moodOtherInput');
+                        const energyOtherInput = document.getElementById('energyOtherInput');
+
+                        const vibeForm = document.getElementById('vibeForm');
+                        const analyticsContent = document.getElementById('analyticsContent');
+                        const historyLogList = document.getElementById('historyLogList');
+                        const btnClearHistory = document.getElementById('btnClearHistory');
+
+                        const MOOD_EMOJIS = {
+                            'Happy': '😊',
+                            'Good': '🙂',
+                            'Optimistic': '🌟',
+                            'Okay': '👌',
+                            'Busy': '💼',
+                            'Regular': '😐', // Blah
+                            'Calm': '😌',
+                            'sad': '😢',
+                            'Pessimistic': '☁️',
+                            'Bored': '🥱',
+                            'Other': '📝'
+                        };
+
+                        const ENERGY_EMOJIS = {
+                            'Hyper': '⚡',
+                            'Caffeinated': '☕',
+                            'Regular': '🟢',
+                            'Sleepy': '😴',
+                            'Lethargic': '🐌',
+                            'Tired': '😫',
+                            'Other': '📝'
+                        };
+
+                        const WORKOUT_EMOJIS = {
+                            'No work out': '🛋️',
+                            'Light': '🚶',
+                            'Medium': '🏃',
+                            'Intense': '🏋️'
+                        };
+
+                        const PERIOD_EMOJIS = {
+                            'No Period': '🌸',
+                            'Day 1': '🩸',
+                            'Day 2': '🩸',
+                            'Day 3': '🩸',
+                            'Day 4': '🩸',
+                            'Day 5': '🩸',
+                            'Day 6': '🩸'
+                        };
+
+                        // State variables for selections
+                        let selectedMood = '';
+                        let selectedEnergy = '';
+                        let selectedWorkout = '';
+                        let selectedPeriod = '';
+
+                        function setupButtonGroup(containerId, onSelect) {
+                            const container = document.getElementById(containerId);
+                            const buttons = container.querySelectorAll('button');
+
+                            buttons.forEach(btn => {
+                                btn.addEventListener('click', () => {
+                                    buttons.forEach(b => {
+                                        b.className = "option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200 text-gray-300";
+                                    });
+                                    btn.className = "option-btn px-3 py-2 rounded-xl bg-purple-600 border border-purple-500 text-white shadow-md shadow-purple-600/20 text-left flex flex-col items-center justify-center transition-all duration-200";
+                                    onSelect(btn.getAttribute('data-value'));
+                                });
+                            });
+                        }
+
+                        setupButtonGroup('moodOptions', (val) => {
+                            selectedMood = val;
+                            if (val === 'Other') {
+                                moodOtherInput.classList.remove('hidden');
+                                moodOtherInput.focus();
+                            } else {
+                                moodOtherInput.classList.add('hidden');
+                            }
+                        });
+
+                        setupButtonGroup('energyOptions', (val) => {
+                            selectedEnergy = val;
+                            if (val === 'Other') {
+                                energyOtherInput.classList.remove('hidden');
+                                energyOtherInput.focus();
+                            } else {
+                                energyOtherInput.classList.add('hidden');
+                            }
+                        });
+
+                        setupButtonGroup('workoutOptions', (val) => {
+                            selectedWorkout = val;
+                        });
+
+                        // Period group has slightly different default padding classes
+                        const periodButtons = periodOptions.querySelectorAll('button');
+                        periodButtons.forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                periodButtons.forEach(b => {
+                                    const isNone = b.getAttribute('data-value') === 'No Period';
+                                    b.className = `option-btn px-2 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200 text-gray-300 ${isNone ? 'col-span-2 md:col-span-1' : ''}`;
+                                });
+                                const isNone = btn.getAttribute('data-value') === 'No Period';
+                                btn.className = `option-btn px-2 py-2 rounded-xl bg-purple-600 border border-purple-500 text-white shadow-md shadow-purple-600/20 text-left flex flex-col items-center justify-center transition-all duration-200 ${isNone ? 'col-span-2 md:col-span-1' : ''}`;
+                                selectedPeriod = btn.getAttribute('data-value');
+                            });
+                        });
+
+                        function resetVibeForm() {
+                            selectedMood = '';
+                            selectedEnergy = '';
+                            selectedWorkout = '';
+                            selectedPeriod = '';
+
+                            const buttons = vibeForm.querySelectorAll('.option-btn');
+                            buttons.forEach(b => {
+                                const isPeriod = b.closest('#periodOptions');
+                                const isNone = b.getAttribute('data-value') === 'No Period';
+                                if (isPeriod) {
+                                    b.className = `option-btn px-2 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200 text-gray-300 ${isNone ? 'col-span-2 md:col-span-1' : ''}`;
+                                } else {
+                                    b.className = "option-btn px-3 py-2 rounded-xl bg-gray-900/50 hover:bg-purple-600/30 border border-gray-700 text-left flex flex-col items-center justify-center transition-all duration-200 text-gray-300";
+                                }
+                            });
+
+                            moodOtherInput.classList.add('hidden');
+                            moodOtherInput.value = '';
+                            energyOtherInput.classList.add('hidden');
+                            energyOtherInput.value = '';
+                        }
+
+                        function renderDashboard() {
+                            const history = JSON.parse(localStorage.getItem('vibe_check_history') || '[]');
+
+                            if (history.length === 0) {
+                                analyticsContent.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <span class="text-4xl block mb-2">📊</span>
+                        No checks logged yet. Log your first check-in to see metrics!
+                    </div>
+                `;
+                                historyLogList.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <span class="text-4xl block mb-2">📜</span>
+                        Your recent logs will show up here.
+                    </div>
+                `;
+                                return;
+                            }
+
+                            const moodCounts = {};
+                            const energyCounts = {};
+                            let workoutCount = 0;
+                            let periodCount = 0;
+
+                            history.forEach(entry => {
+                                const moodVal = (entry.mood === 'Other' && entry.moodCustom) ? entry.moodCustom : entry.mood;
+                                moodCounts[moodVal] = (moodCounts[moodVal] || 0) + 1;
+
+                                const energyVal = (entry.energy === 'Other' && entry.energyCustom) ? entry.energyCustom : entry.energy;
+                                energyCounts[energyVal] = (energyCounts[energyVal] || 0) + 1;
+
+                                if (entry.workout && entry.workout !== 'No work out') {
+                                    workoutCount++;
+                                }
+                                if (entry.period && entry.period !== 'No Period') {
+                                    periodCount++;
+                                }
+                            });
+
+                            const total = history.length;
+
+                            let moodHtml = `<div class="space-y-3">
+                <h4 class="text-xs font-semibold uppercase tracking-wider text-gray-400">Mood Distribution</h4>`;
+                            Object.keys(moodCounts).forEach(mood => {
+                                const count = moodCounts[mood];
+                                const pct = Math.round((count / total) * 100);
+                                const emoji = MOOD_EMOJIS[mood] || '📝';
+                                moodHtml += `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs text-gray-300">
+                            <span class="flex items-center"><span class="mr-1.5">${emoji}</span>${mood}</span>
+                            <span class="font-semibold text-gray-400">${count} (${pct}%)</span>
+                        </div>
+                        <div class="w-full bg-gray-900/60 h-2 rounded-full overflow-hidden">
+                            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+                            });
+                            moodHtml += `</div>`;
+
+                            let energyHtml = `<div class="space-y-3 pt-2">
+                <h4 class="text-xs font-semibold uppercase tracking-wider text-gray-400">Energy Levels</h4>`;
+                            Object.keys(energyCounts).forEach(energy => {
+                                const count = energyCounts[energy];
+                                const pct = Math.round((count / total) * 100);
+                                const emoji = ENERGY_EMOJIS[energy] || '📝';
+                                energyHtml += `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs text-gray-300">
+                            <span class="flex items-center"><span class="mr-1.5">${emoji}</span>${energy}</span>
+                            <span class="font-semibold text-gray-400">${count} (${pct}%)</span>
+                        </div>
+                        <div class="w-full bg-gray-900/60 h-2 rounded-full overflow-hidden">
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+                            });
+                            energyHtml += `</div>`;
+
+                            const workoutPct = Math.round((workoutCount / total) * 100);
+                            const metricsHtml = `
+                <div class="grid grid-cols-2 gap-4 pt-2">
+                    <div class="bg-gray-900/40 border border-gray-700/30 p-3 rounded-xl text-center">
+                        <div class="text-2xl mb-1">🏃</div>
+                        <div class="text-[10px] text-gray-400 uppercase font-semibold">Active Days</div>
+                        <div class="text-lg font-bold text-gray-200 mt-0.5">${workoutCount} (${workoutPct}%)</div>
+                    </div>
+                    <div class="bg-gray-900/40 border border-gray-700/30 p-3 rounded-xl text-center">
+                        <div class="text-2xl mb-1">🩸</div>
+                        <div class="text-[10px] text-gray-400 uppercase font-semibold">Period Days Logged</div>
+                        <div class="text-lg font-bold text-gray-200 mt-0.5">${periodCount}</div>
+                    </div>
+                </div>
+            `;
+
+                            analyticsContent.innerHTML = `
+                <div class="space-y-5">
+                    ${moodHtml}
+                    ${energyHtml}
+                    ${metricsHtml}
+                </div>
+            `;
+
+                            let historyHtml = '';
+                            history.forEach((entry, idx) => {
+                                const date = new Date(entry.timestamp);
+                                const dateStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' at ' + date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+                                const moodText = (entry.mood === 'Other' && entry.moodCustom) ? entry.moodCustom : entry.mood;
+                                const moodEmoji = MOOD_EMOJIS[entry.mood] || '📝';
+
+                                const energyText = (entry.energy === 'Other' && entry.energyCustom) ? entry.energyCustom : entry.energy;
+                                const energyEmoji = ENERGY_EMOJIS[entry.energy] || '📝';
+
+                                const workoutEmoji = WORKOUT_EMOJIS[entry.workout] || '🛋️';
+                                const periodEmoji = PERIOD_EMOJIS[entry.period] || '🌸';
+
+                                historyHtml += `
+                    <div class="bg-gray-900/40 border border-gray-800/80 rounded-xl p-4 flex justify-between items-center transition-all duration-200 hover:bg-gray-900/60">
+                        <div class="flex-1 min-w-0 pr-3">
+                            <div class="text-[10px] text-gray-500 font-medium mb-1">${dateStr}</div>
+                            <div class="flex flex-wrap gap-1.5 mt-1">
+                                <span class="px-2 py-0.5 rounded-full bg-purple-950/40 text-purple-400 border border-purple-900/40 text-[10px] flex items-center font-medium">
+                                    <span class="mr-1">${moodEmoji}</span> ${moodText}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full bg-blue-950/40 text-blue-400 border border-blue-900/40 text-[10px] flex items-center font-medium">
+                                    <span class="mr-1">${energyEmoji}</span> ${energyText}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full bg-green-950/40 text-green-400 border border-green-900/40 text-[10px] flex items-center font-medium">
+                                    <span class="mr-1">${workoutEmoji}</span> ${entry.workout}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full bg-pink-950/40 text-pink-400 border border-pink-900/40 text-[10px] flex items-center font-medium">
+                                    <span class="mr-1">${periodEmoji}</span> ${entry.period}
+                                </span>
+                            </div>
+                        </div>
+                        <button class="delete-log-btn text-gray-600 hover:text-red-400 transition-colors" data-index="${idx}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                            });
+                            historyLogList.innerHTML = historyHtml;
+
+                            historyLogList.querySelectorAll('.delete-log-btn').forEach(btn => {
+                                btn.addEventListener('click', () => {
+                                    const idx = parseInt(btn.getAttribute('data-index'), 10);
+                                    const history = JSON.parse(localStorage.getItem('vibe_check_history') || '[]');
+                                    history.splice(idx, 1);
+                                    localStorage.setItem('vibe_check_history', JSON.stringify(history));
+                                    renderDashboard();
+                                });
+                            });
+                        }
+
+                        vibeForm.addEventListener('submit', (e) => {
+                            e.preventDefault();
+
+                            if (!selectedMood || !selectedEnergy || !selectedWorkout || !selectedPeriod) {
+                                alert('Please select an option for each question before saving!');
+                                return;
+                            }
+
+                            const newEntry = {
+                                timestamp: new Date().toISOString(),
+                                mood: selectedMood,
+                                moodCustom: selectedMood === 'Other' ? moodOtherInput.value.trim() : '',
+                                energy: selectedEnergy,
+                                energyCustom: selectedEnergy === 'Other' ? energyOtherInput.value.trim() : '',
+                                workout: selectedWorkout,
+                                period: selectedPeriod
+                            };
+
+                            if (newEntry.mood === 'Other' && !newEntry.moodCustom) {
+                                alert('Please write in your custom mood description.');
+                                return;
+                            }
+                            if (newEntry.energy === 'Other' && !newEntry.energyCustom) {
+                                alert('Please write in your custom energy description.');
+                                return;
+                            }
+
+                            const history = JSON.parse(localStorage.getItem('vibe_check_history') || '[]');
+                            history.unshift(newEntry);
+                            localStorage.setItem('vibe_check_history', JSON.stringify(history));
+
+                            resetVibeForm();
+                            renderDashboard();
+                        });
+
+                        btnClearHistory.addEventListener('click', () => {
+                            if (confirm('Are you sure you want to clear your complete vibe check history?')) {
+                                localStorage.removeItem('vibe_check_history');
+                                renderDashboard();
+                            }
+                        });
+
+                        renderDashboard();
+
+                        // --- STOCK CHECK APP LOGIC ---
+                        const sheetUrlInput = document.getElementById('sheetUrlInput');
+                        const btnLoadPortfolio = document.getElementById('btnLoadPortfolio');
+                        const btnDemoPortfolio = document.getElementById('btnDemoPortfolio');
+                        const portfolioTableBody = document.getElementById('portfolioTableBody');
+                        const portfolioLastUpdated = document.getElementById('portfolioLastUpdated');
+                        const summaryTotalCost = document.getElementById('summaryTotalCost');
+                        const summaryTotalValue = document.getElementById('summaryTotalValue');
+                        const summaryTotalGainLoss = document.getElementById('summaryTotalGainLoss');
+                        const newsTargStock = document.getElementById('newsTargStock');
+                        const stockNewsList = document.getElementById('stockNewsList');
+
+                        let currentPortfolio = [];
+                        let currentQuotes = {};
+                        let activeNewsTicker = '';
+
+                        // Helper to format currency
+                        function formatUSD(num) {
+                            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+                        }
+
+                        // Helper to format percent
+                        function formatPercent(num) {
+                            return (num >= 0 ? '+' : '') + num.toFixed(2) + '%';
+                        }
+
+                        async function fetchPortfolio(sheetUrl = '') {
+                            try {
+                                portfolioTableBody.innerHTML = `
+                                    <tr>
+                                        <td colspan="8" class="text-center py-12 text-gray-500">
+                                            <span class="inline-block animate-spin mr-2">🔄</span> Loading portfolio...
+                                        </td>
+                                    </tr>
+                                `;
+                                const url = sheetUrl ? `/stocks/portfolio?sheetUrl=${encodeURIComponent(sheetUrl)}` : '/stocks/portfolio';
+                                const response = await fetch(url);
+                                if (!response.ok) {
+                                    const errData = await response.json();
+                                    throw new Error(errData.error || 'Failed to retrieve portfolio');
+                                }
+                                currentPortfolio = await response.json();
+                                if (currentPortfolio.length === 0) {
+                                    portfolioTableBody.innerHTML = `
+                                        <tr>
+                                            <td colspan="8" class="text-center py-12 text-gray-500">
+                                                No stock rows parsed. Check your spreadsheet headers (Ticker, Shares, Buy Price).
+                                            </td>
+                                        </tr>
+                                    `;
+                                    return;
+                                }
+                                await refreshQuotes();
+                            } catch (err) {
+                                alert('Error: ' + err.message);
+                                portfolioTableBody.innerHTML = `
+                                    <tr>
+                                        <td colspan="8" class="text-center py-12 text-red-400 font-medium">
+                                            ⚠️ ${err.message}
+                                        </td>
+                                    </tr>
+                                `;
+                            }
+                        }
+
+                        async function refreshQuotes() {
+                            if (currentPortfolio.length === 0) return;
+                            const tickers = currentPortfolio.map(item => item.ticker).join(',');
+                            try {
+                                const response = await fetch(`/stocks/quotes?tickers=${tickers}`);
+                                if (response.ok) {
+                                    currentQuotes = await response.json();
+                                    renderPortfolioTable();
+                                    portfolioLastUpdated.innerText = 'Updated at ' + new Date().toLocaleTimeString();
+                                    
+                                    // Load news for the first stock by default if not set
+                                    if (currentPortfolio.length > 0 && !activeNewsTicker) {
+                                        selectNewsStock(currentPortfolio[0].ticker);
+                                    } else if (activeNewsTicker) {
+                                        loadNews(activeNewsTicker);
+                                    }
+                                } else {
+                                    throw new Error('Failed to refresh market prices');
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                renderPortfolioTable(); // Render table anyway with placeholders
+                            }
+                        }
+
+                        function renderPortfolioTable() {
+                            let tableHtml = '';
+                            let totalCost = 0;
+                            let totalValue = 0;
+                            let totalTodayChange = 0;
+
+                            currentPortfolio.forEach(item => {
+                                const quote = currentQuotes[item.ticker] || { price: item.buyPrice, change: 0, changePercent: 0 };
+                                const shares = item.shares;
+                                const costBasis = item.buyPrice;
+                                const currentPrice = quote.price;
+
+                                const itemCost = shares * costBasis;
+                                const itemValue = shares * currentPrice;
+                                const itemTotalGainLoss = itemValue - itemCost;
+                                const itemTotalGainLossPct = costBasis > 0 ? (itemTotalGainLoss / itemCost) * 100 : 0;
+                                const itemTodayChange = shares * quote.change;
+
+                                totalCost += itemCost;
+                                totalValue += itemValue;
+                                totalTodayChange += itemTodayChange;
+
+                                const isGain = itemTotalGainLoss >= 0;
+                                const isTodayUp = quote.change >= 0;
+
+                                const isSelected = item.ticker === activeNewsTicker;
+
+                                tableHtml += `
+                                    <tr class="border-b border-gray-800/80 hover:bg-gray-800/20 cursor-pointer transition-colors duration-150 ${isSelected ? 'bg-green-600/10 border-l-2 border-l-green-500' : ''}" 
+                                        onclick="selectNewsStock('${item.ticker}')">
+                                        <th scope="row" class="px-4 py-3.5 font-bold text-gray-100 flex flex-col">
+                                            <span>${item.ticker}</span>
+                                            <span class="text-[10px] text-gray-500 font-normal">Market Price: ${formatUSD(currentPrice)}</span>
+                                        </th>
+                                        <td class="px-4 py-3.5 text-right font-medium text-gray-300">${shares}</td>
+                                        <td class="px-4 py-3.5 text-right text-gray-400">${formatUSD(costBasis)}</td>
+                                        <td class="px-4 py-3.5 text-right font-semibold text-gray-300">${formatUSD(currentPrice)}</td>
+                                        <td class="px-4 py-3.5 text-right text-gray-400">${formatUSD(itemCost)}</td>
+                                        <td class="px-4 py-3.5 text-right font-semibold text-gray-200">${formatUSD(itemValue)}</td>
+                                        <td class="px-4 py-3.5 text-right font-medium ${isTodayUp ? 'text-green-400' : 'text-red-400'}">
+                                            ${formatUSD(itemTodayChange)} (${formatPercent(quote.changePercent)})
+                                        </td>
+                                        <td class="px-4 py-3.5 text-right font-semibold ${isGain ? 'text-green-400' : 'text-red-400'}">
+                                            ${formatUSD(itemTotalGainLoss)} (${formatPercent(itemTotalGainLossPct)})
+                                        </td>
+                                    </tr>
+                                `;
+                            });
+
+                            portfolioTableBody.innerHTML = tableHtml;
+
+                            // Update Summary Card
+                            summaryTotalCost.innerText = formatUSD(totalCost);
+                            summaryTotalValue.innerText = formatUSD(totalValue);
+                            
+                            const totalGainLoss = totalValue - totalCost;
+                            const totalGainLossPct = totalCost > 0 ? (totalGainLoss / totalCost) * 100 : 0;
+                            const isNetGain = totalGainLoss >= 0;
+                            
+                            summaryTotalGainLoss.className = `font-bold text-xl ${isNetGain ? 'text-green-400' : 'text-red-400'}`;
+                            summaryTotalGainLoss.innerText = `${formatUSD(totalGainLoss)} (${formatPercent(totalGainLossPct)})`;
+                        }
+
+                        function selectNewsStock(ticker) {
+                            activeNewsTicker = ticker;
+                            newsTargStock.innerText = ticker;
+                            
+                            // Re-render table to update row highlighted classes
+                            renderPortfolioTable();
+                            
+                            loadNews(ticker);
+                        }
+
+                        async function loadNews(ticker) {
+                            try {
+                                stockNewsList.innerHTML = `
+                                    <div class="text-center py-12 text-gray-500">
+                                        <span class="inline-block animate-spin mr-2">🔄</span> Loading news...
+                                    </div>
+                                `;
+                                const response = await fetch(`/stocks/news?ticker=${ticker}`);
+                                if (!response.ok) throw new Error('News query failed');
+                                
+                                const articles = await response.json();
+                                if (articles.length === 0) {
+                                    stockNewsList.innerHTML = `
+                                        <div class="text-center py-12 text-gray-500">
+                                            No recent news found for ${ticker}.
+                                        </div>
+                                    `;
+                                    return;
+                                }
+
+                                let newsHtml = '';
+                                articles.forEach(art => {
+                                    const dateStr = art.time ? new Date(art.time * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Today';
+                                    newsHtml += `
+                                        <a href="${art.link}" target="_blank" class="block bg-gray-900/40 hover:bg-gray-900/70 border border-gray-800/80 hover:border-gray-700/80 p-3.5 rounded-xl transition-all duration-200 group">
+                                            <div class="flex justify-between items-center text-[10px] text-gray-500 font-medium mb-1">
+                                                <span>${art.publisher || 'Finance News'}</span>
+                                                <span>${dateStr}</span>
+                                            </div>
+                                            <h4 class="text-xs font-semibold text-gray-200 group-hover:text-green-400 transition-colors duration-150 leading-snug">
+                                                ${art.title}
+                                            </h4>
+                                        </a>
+                                    `;
+                                });
+                                stockNewsList.innerHTML = newsHtml;
+                            } catch (err) {
+                                stockNewsList.innerHTML = `
+                                    <div class="text-center py-12 text-red-400 font-medium">
+                                        ⚠️ Failed to load news feed.
+                                    </div>
+                                `;
+                            }
+                        }
+
+                        btnLoadPortfolio.addEventListener('click', () => {
+                            const val = sheetUrlInput.value.trim();
+                            if (!val) {
+                                alert('Please paste a Google Sheets URL or ID first!');
+                                return;
+                            }
+                            localStorage.setItem('stock_sheet_url', val);
+                            fetchPortfolio(val);
+                        });
+
+                        btnDemoPortfolio.addEventListener('click', () => {
+                            sheetUrlInput.value = '';
+                            localStorage.removeItem('stock_sheet_url');
+                            fetchPortfolio('');
+                        });
+
+                        // Navigation link switch override or setup
+                        navStockCheck.addEventListener('click', () => {
+                            const savedUrl = localStorage.getItem('stock_sheet_url') || '';
+                            sheetUrlInput.value = savedUrl;
+                            fetchPortfolio(savedUrl);
+                        });
     </script>
 </body>
 </html>
