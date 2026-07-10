@@ -175,33 +175,85 @@ def parse_sheets_csv(csv_text):
     ticker_idx = -1
     shares_idx = -1
     buy_price_idx = -1
+    total_cost_idx = -1
     
     for idx, h in enumerate(headers):
-        if 'ticker' in h or 'symbol' in h or 'stock' in h:
+        h_clean = h.strip().lower()
+        if 'ticker' in h_clean or 'symbol' in h_clean or 'stock' in h_clean:
             ticker_idx = idx
-        # Prioritize price/cost columns over shares to avoid 'share price' colliding with shares
-        elif ('buy' in h or 'cost' in h or 'purchase' in h or 'price' in h) and 'total' not in h:
+        # Prioritize unit price / buy cost columns over quantity
+        elif ('buy' in h_clean or 'purchase' in h_clean or 'unit' in h_clean or ('price' in h_clean and 'total' not in h_clean) or ('cost' in h_clean and 'total' not in h_clean)):
             buy_price_idx = idx
-        elif 'share' in h or 'qty' in h or 'quantity' in h or 'count' in h or 'units' in h:
+        elif 'share' in h_clean or 'qty' in h_clean or 'quantity' in h_clean or 'count' in h_clean or 'units' in h_clean:
             shares_idx = idx
+        elif 'total' in h_clean and ('cost' in h_clean or 'value' in h_clean or 'price' in h_clean):
+            total_cost_idx = idx
             
     if ticker_idx == -1: ticker_idx = 0
-    if shares_idx == -1: shares_idx = min(1, len(headers)-1)
-    if buy_price_idx == -1: buy_price_idx = min(2, len(headers)-1)
+    if shares_idx == -1: shares_idx = min(2, len(headers)-1)
+    if buy_price_idx == -1: buy_price_idx = min(3, len(headers)-1)
+    if total_cost_idx == -1: total_cost_idx = len(headers)-1
     
-    app.logger.debug(f"Parsed CSV Headers: {headers}. Indices -> Ticker: {ticker_idx}, Shares: {shares_idx}, BuyPrice: {buy_price_idx}")
+    app.logger.debug(f"Parsed CSV Headers: {headers}. Indices -> Ticker: {ticker_idx}, Shares: {shares_idx}, BuyPrice: {buy_price_idx}, TotalCost: {total_cost_idx}")
     
     portfolio = []
     for r in rows[1:]:
-        if len(r) > max(ticker_idx, shares_idx, buy_price_idx):
-            ticker = r[ticker_idx].strip().upper()
-            if not ticker or ticker == 'TOTAL' or ticker == 'SUM':
+        # Remove empty strings from right side of row to normalize row length
+        while len(r) > 0 and not r[-1].strip():
+            r.pop()
+            
+        if len(r) >= 3:
+            ticker = r[0].strip().upper() # Ticker is virtually always in the first column
+            # Clean up potential newlines in the ticker string from the CSV
+            ticker = ticker.replace('\n', '').replace('\r', '').strip()
+            
+            if not ticker or ticker in ['TOTAL', 'SUM', 'GRAND TOTAL']:
                 continue
                 
-            shares = sanitize_float(r[shares_idx], default=1.0)
-            buy_price = sanitize_float(r[buy_price_idx], default=0.0)
+            # If the row has 4 or more columns, map dynamically from the BACK (right-to-left)
+            # to be 100% immune to commas inside the NAME column splitting the row into 6+ pieces!
+            if len(r) >= 4:
+                # Total Cost is virtually always the LAST column in the row
+                val_total = r[-1]
+                val_b = r[-2]
+                val_a = r[-3] if len(r) >= 5 else r[-2]
+                
+                shares_comes_after_price = shares_idx > buy_price_idx
+                
+                # Assign based on detected header order
+                if shares_comes_after_price and len(r) >= 5:
+                    raw_shares = val_b
+                    raw_buy_price = val_a
+                elif not shares_comes_after_price and len(r) >= 5:
+                    raw_shares = val_a
+                    raw_buy_price = val_b
+                else:
+                    # Fallback for 4 columns
+                    raw_shares = r[shares_idx] if shares_idx < len(r) else val_b
+                    raw_buy_price = r[buy_price_idx] if buy_price_idx < len(r) else val_a
+                
+                shares = sanitize_float(raw_shares, default=1.0)
+                buy_price = sanitize_float(raw_buy_price, default=0.0)
+                total_cost = sanitize_float(val_total, default=0.0)
+                
+                # Check for EMPTY or FALLBACK shares cell ("") while Total Cost is provided!
+                # If they have a dollar amount in Total Cost, infer Quantity dynamically:
+                shares_str_clean = str(raw_shares).strip()
+                calculated_shares = 0
+                if total_cost > 0 and buy_price > 0:
+                    calculated_shares = round(total_cost / buy_price)
+                
+                if not shares_str_clean or (shares == 1.0 and total_cost > 0 and abs((shares * buy_price) - total_cost) > 1.0):
+                    app.logger.info(f"Inferring Quantity for {ticker}: Total Cost ({total_cost}) / Unit Cost ({buy_price}) = {calculated_shares}")
+                    shares = float(calculated_shares)
+            else:
+                # Fallback for very short rows (length 3)
+                idx_shares = shares_idx if shares_idx < len(r) else 1
+                idx_price = buy_price_idx if buy_price_idx < len(r) else 2
+                shares = sanitize_float(r[idx_shares], default=1.0)
+                buy_price = sanitize_float(r[idx_price], default=0.0)
             
-            app.logger.debug(f"Parsed Row - Ticker: {ticker}, Shares: {shares}, BuyPrice: {buy_price}")
+            app.logger.debug(f"Parsed Row (Smart Extract) - Length: {len(r)}, Ticker: {ticker}, Shares: {shares}, BuyPrice: {buy_price}")
             
             portfolio.append({
                 "ticker": ticker,
